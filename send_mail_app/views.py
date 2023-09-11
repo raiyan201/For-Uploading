@@ -2,6 +2,7 @@ from django.shortcuts import render,HttpResponse,redirect
 from send_mail_app.tasks import sending_mail
 from send_mail_app.tasks import send_mail_function
 from send_mail_app.tasks import send_mail_with_atachments
+from send_mail_app.tasks import send_mail_with_attachments
 from django.conf import settings
 from .models import Employee,Customer
 # Create your views here.
@@ -31,8 +32,7 @@ def send_mail_to_gmail(request):
 
 
 def send_xlsx(request):
-    
-                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                   
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       
     subject="Periodic Task"
     message="Hello this is a simple xlsx attachment"                       
    
@@ -43,7 +43,7 @@ def send_xlsx(request):
         
     recipient_list=['raiyanar0@gmail.com']
     file_path = f"{settings.BASE_DIR}/Employee-2023-09-06.xlsx"
-    send_mail_with_atachments(subject,message,recipient_list,file_path)
+    send_mail_with_attachments.delay(subject,message,recipient_list,file_path)
     return HttpResponse("attachment send check it")
 
     
@@ -175,7 +175,6 @@ def download_data(request):
     headers=["Name","Location","City"]
     ws.append(headers)
     
-    
     customers=Customer.objects.get(name=request.user)
     # customers=Customer.objects.all()
     print("customers")
@@ -221,6 +220,7 @@ def download_data1(request):
     
     
     original = ws['mail']
+    
     # target=
     # shutil.copyfile(original,target)
     
@@ -259,8 +259,8 @@ def download_data1(request):
     return redirect( target_file)
   
     
-def excel_writer(request,priginal,target):
-  return target
+# def excel_writer(request,priginal,target):
+#   return target
 
 
 def attach_file(request):
@@ -282,10 +282,107 @@ def attach_file(request):
     
     # file_path = str(settings.BASE_DIR)+'/mail.xlsx'
 
-  
     # target_file=excel_writer(request,file_path,file_path)
     send_mail_with_atachments(subject,message,recipient_list,file_path)
     
     return HttpResponse("attachment send check it")
-  
+
+
+from django.templatetags.static import static
+
+import shutil
+import openpyxl
+import pandas as pd
+
+
+def attach_file1(request):
+    original='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/original.xlsx'
+    print("original")
+    print(original)
+    # original = 'C:\\Users\\ABU DUJANA ANSARI\Desktop\\original.xlsx'
+    target = 'C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
+    print("target")
+    print(target)
+   
+    shutil.copyfile(original, target)
+
+    wb = openpyxl.load_workbook(target)
+    print("wb")
+    print(wb)
     
+    ws = wb.active
+    print("ws sheet")
+    print(ws)
+
+    customers=Customer.objects.get(name=request.user)
+
+    print("customers")
+    print(customers)   
+
+    data=[{'name': customers.name.username,
+    'location': customers.location, 
+    'city': customers.city}]
+    
+    # for obj in customers:
+    #    data.append({
+    #       'name': obj.name.username,
+    #       'location': obj.location, 
+    #       'city': obj.city
+    #    })
+       
+    print("data")
+    print(data)
+
+    pd.DataFrame(data).to_excel(target)
+
+    file_path1='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/original.xlsx'
+    print("file_path1")
+    print(file_path1)
+    file_split1=file_path1.split("static")[1]
+    print("file_split1")
+    print(file_split1)
+
+    old_url= f"http://127.0.0.1:8000/static{file_split1}"
+    print("old_url")
+    print(old_url)
+
+    file_path2='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
+    print("file_path2")
+    print(file_path2)
+    file_split2=file_path2.split("static")[1]
+    print("file_split2")
+    print(file_split2)
+
+    new_url= f"http://127.0.0.1:8000/static{file_split2}"
+    print("new_url")
+    print(new_url)
+    
+    user=request.user
+    email=request.user.email
+    print("user")      
+    print(user)
+    print("email")
+    print(email)
+    
+    subject="Excel data"
+    
+    message=f"Hello this is a exported data:\n {new_url}"    
+    
+    recipient_list=[email]
+    print("recipient list")
+    print(recipient_list)
+    
+    # file_paths=[file_path1,file_path2]
+    # print("file_paths")
+    # print(file_paths)
+    
+    target_file=excel_writer(request,old_url,new_url)
+
+    send_mail_with_attachments.delay(subject,message,recipient_list,file_path2)
+
+    # return redirect( target_file)
+    return HttpResponse("Email send successfully")
+
+def excel_writer(request,old_url,new_url):
+  return new_url
+  return HttpResponse("ok")

@@ -25,14 +25,6 @@ def send_mail_function(self):
             fail_silently=False
         )
         
-        # send_mail(
-        #     subject=mail_subject,
-        #     message=message2,
-        #     from_email=settings.EMAIL_HOST_USER,
-        #     recipient_list="raiyyanabdurrehman@gmail.com",
-        #     fail_silently=False
-        # )
-        
     return "Done"
 
 
@@ -40,8 +32,6 @@ def send_mail_with_atachments(subject,message,recipient_list,file_path):
     mail=EmailMessage(subject=subject,body=message,from_email=settings.EMAIL_HOST_USER,to=recipient_list)
     mail.attach_file(file_path)
     mail.send()
- 
-
     
 from django.core.mail import send_mass_mail
 from django.core.mail import EmailMessage
@@ -71,6 +61,7 @@ def sending_mail(email_messages):
 @shared_task
 def send_mail_with_attachments(subject, message, recipient_list, file_path):
     mail = EmailMessage(subject=subject, body=message, from_email=settings.EMAIL_HOST_USER, to=recipient_list)
+    
     mail.attach_file(file_path)
     mail.send(fail_silently=False)
 

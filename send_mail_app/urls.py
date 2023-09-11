@@ -10,7 +10,8 @@ urlpatterns = [
     path('register/',views.register,name="register"),
     path('login/',views.login_request,name="login"),
     path('logout/',views.logout,name="logout"),
-    path('download',views.download_data1,name="download-data"),
-    path('attach-file',views.attach_file,name='attach-file'),
+    path('download',views.download_data,name="download-data"),
+    # path('attach-file',views.attach_file,name='attach-file'),
+    path('attach-file',views.attach_file1,name='attach-file'),
 
 ]
