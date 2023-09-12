@@ -1,4 +1,4 @@
-from django.shortcuts import render,HttpResponse,redirect
+from django.shortcuts import render,HttpResponse,redirect,HttpResponseRedirect
 from send_mail_app.tasks import sending_mail
 from send_mail_app.tasks import send_mail_function
 from send_mail_app.tasks import send_mail_with_atachments
@@ -11,9 +11,13 @@ from django.http import HttpResponse
 from openpyxl import Workbook,load_workbook
 from django.core.mail import EmailMessage
 # from send_mail_app.tasks import send_b_mail
+from send_mail_app.tasks import doc_to_pdf
 import json
 
 from django.http import HttpResponse
+
+
+
 
 def send_mail_to_gmail(request):
     send_mail_function.delay()
@@ -385,4 +389,51 @@ def attach_file1(request):
 
 def excel_writer(request,old_url,new_url):
   return new_url
-  return HttpResponse("ok")
+  # return HttpResponse("ok")
+
+
+
+from django.core.files.storage import FileSystemStorage
+from docx2pdf import convert
+from celery.result import AsyncResult
+
+import os
+
+def file_convert(request):
+  if request.method =="POST":
+    files=request.FILES['files']
+    print("files")
+    print(files)
+
+    fs=FileSystemStorage()
+    print("fs")
+    print(fs)
+    namefile=fs.save(files.name,files)
+    print("namefile")
+    print(namefile)
+    
+    uploaded_file=fs.url(namefile)
+    print("uploaded_file")
+    print(uploaded_file)
+    
+    data=doc_to_pdf.delay(files.name)
+    print("data")
+    print(data)
+    
+    # return HttpResponseRedirect(data.task_id)
+    return HttpResponse("file converted to pdf")
+    
+    # convert('static/' + files.name)    
+  return render(request,'file.html')
+
+
+# def checkstatus(request,task_id):
+#   print("TASK_ID")
+#   print(task_id)
+#   res=AsyncResult(task_id)  
+#   print(res.ready())
+#   task_status=res.ready()
+#   print(task_status)
+#   context={'task_status':task_status}  
+#   return render(request,'checkstatus.html',context)
+

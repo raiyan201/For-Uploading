@@ -147,3 +147,6 @@ CELERY_BEAT_SCHEDULER='django_celery_beat.schedulers:DatabaseScheduler'
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media/')
+
+
+CELERY_RESULT_BACKEND = 'rpc://'

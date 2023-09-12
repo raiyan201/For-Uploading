@@ -5,6 +5,9 @@ from send_mail import settings
 from django.utils import timezone
 from datetime import timedelta
 from django.core.mail import EmailMessage
+from celery import Celery
+
+app = Celery('tasks', broker='amqp://guest@localhost//')
 
 @shared_task(bind=True)
 def send_mail_function(self):
@@ -66,3 +69,12 @@ def send_mail_with_attachments(subject, message, recipient_list, file_path):
     mail.send(fail_silently=False)
 
 
+
+from docx2pdf import convert
+from time import sleep
+@shared_task
+def doc_to_pdf(files):
+    
+    sleep(10)
+    convert('static/' + files)
+    return None
