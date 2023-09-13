@@ -11,11 +11,39 @@
     <h1>Users Page</h1>
 {% if user.is_authenticated %}
 
-<button type="button" class="btn btn-outline-info"><a href="{% url 'download-data' %}">Download</a></button>    
-<button type="button" class="btn btn-outline-info"><a href="{% url 'attach-file' %}">Send-Mail-Now</a></button>    
+{% comment %} <button type="button" class="btn btn-outline-info"><a href="{% url 'download-data' %}">Download</a></button>    
+<button type="button" class="btn btn-outline-info"><a href="{% url 'attach-file' %}">Send-Mail-Now</a></button>     {% endcomment %}
+
+<form method="post" onsubmit="return validateForm()">
+
+{% csrf_token %}
+
+<label for="email_id">User Email:</label>
+
+<select name="email_id" id="email_id">
+  <option value=""></option>
+  <option value="{{request.user.email}}">{{request.user.email}}</option>    
+</select>
+
+<button type="button" class="btn btn-outline-info"><a href="{% url 'mailing' %}">Send</a></button>    
+</form>
 
 {% else%}
 <h1>Please Login First</h1>
 <button type="button" class="btn btn-outline-success"><a href="{% url 'login' %}">Login</a></button>    
 {% endif %}
 </div>
+
+
+<script>
+  function validateForm(){
+          debugger;
+          let x=document.forms["myForm"]["name"].value;
+          if (x=="") {
+              document.getElementById("name").innerHTML=  "Required";  
+              return false;
+          }
+
+        }
+  
+</script>

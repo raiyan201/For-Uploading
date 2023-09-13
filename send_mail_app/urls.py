@@ -13,7 +13,8 @@ urlpatterns = [
     path('download',views.download_data,name="download-data"),
     # path('attach-file',views.attach_file,name='attach-file'),
     path('attach-file',views.attach_file1,name='attach-file'),
+    path('mailing',views.mailing,name='mailing'),
     path('file-convert',views.file_convert,name='file-convert'),
-    # path('<task_id>',views.checkstatus,name="check-status")
+    path('<task_id>',views.checkstatus,name="check-status")
 
 ]
