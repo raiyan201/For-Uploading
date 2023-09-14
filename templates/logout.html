@@ -8,24 +8,38 @@
 <link rel="stylesheet" href="/static/css.css">
 
 <div class="container">
-    <h1>Users Page</h1>
+    <h1 >Users Page</h1>
+
 {% if user.is_authenticated %}
 
 {% comment %} <button type="button" class="btn btn-outline-info"><a href="{% url 'download-data' %}">Download</a></button>    
 <button type="button" class="btn btn-outline-info"><a href="{% url 'attach-file' %}">Send-Mail-Now</a></button>     {% endcomment %}
 
-<form method="post" onsubmit="return validateForm()">
+<form name="myForm" onsubmit="return validateForm()" method="post">
 
 {% csrf_token %}
 
 <label for="email_id">User Email:</label>
-
+<span id="email_error" style="color:red;"></span>    
 <select name="email_id" id="email_id">
-  <option value=""></option>
+  <option value="">None</option>
   <option value="{{request.user.email}}">{{request.user.email}}</option>    
-</select>
+</select> 
 
-<button type="button" class="btn btn-outline-info"><a href="{% url 'mailing' %}">Send</a></button>    
+{% comment %} <br>
+<label for="email_all">All Email</label>
+<span id="email_all" style="color:red;"></span>
+
+<select name="email_all" id="email_all">
+   <option value=reciepient_list>All</option>
+   {% for user in users %}
+   <option value="{{user.email}}">{{user.email}}</option>
+   {% endfor %}
+</select>   {% endcomment %}
+
+{% comment %} <button type="submit" class="btn btn-outline-info"><a href="{% url 'mailing' %}">Send</a></button> {% endcomment %}
+<button type="submit" class="btn btn-outline-info">Send</a></button>    
+
 </form>
 
 {% else%}
@@ -34,16 +48,15 @@
 {% endif %}
 </div>
 
-
-<script>
-  function validateForm(){
+{% comment %} <script>
+      function validateForm(){
           debugger;
-          let x=document.forms["myForm"]["name"].value;
+          let x=document.forms["myForm"]["email_id"].value;
           if (x=="") {
-              document.getElementById("name").innerHTML=  "Required";  
+              document.getElementById("email_error").innerHTML=  "Required";  
               return false;
           }
-
+          window.location.href="{% url 'mailing' %}";
+          return false        
         }
-  
-</script>
+</script> {% endcomment %}

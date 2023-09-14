@@ -15,8 +15,7 @@ from send_mail_app.tasks import doc_to_pdf
 import json
 
 from django.http import HttpResponse
-
-
+from django.contrib.auth import get_user_model
 
 
 def send_mail_to_gmail(request):
@@ -119,7 +118,14 @@ def login_request(request):
   return render(request,'login.html',context={"login_form":form})
 
 def logout(request):
-    return render(request,"logout.html")
+  
+  users=get_user_model().objects.all()
+  for user in users:
+        print("mailing")       
+        to_email=user.email
+        # print([to_email])
+        reciepient_list=[to_email]
+  return render(request,"logout.html",{"users":users,"reciepient_list":reciepient_list})
 
 import openpyxl
 try: 
@@ -373,15 +379,12 @@ def attach_file1(request):
     user=request.user
     email=request.user.email
    
-    
     print("user")      
     print(user)
     print("email")
     print(email)
   
-    
     subject="Excel data"
-    
     message=f"Hello this is a exported data:\n {new_url},Your credentials are: Username:{request.user},Password:{request.user.password}"    
     
     print("message")
@@ -450,94 +453,103 @@ def checkstatus(request,task_id):
   context={'task_status':task_status}  
   return render(request,'checkstatus.html',context)
 
+
+
 def mailing(request):
-    original='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/original.xlsx'
-    print("original")
-    print(original)
-    # original = 'C:\\Users\\ABU DUJANA ANSARI\Desktop\\original.xlsx'
-    target = 'C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
-    print("target")
-    print(target)
-   
-    shutil.copyfile(original, target)
-
-    wb = openpyxl.load_workbook(target)
-    print("wb")
-    print(wb)
-    
-    ws = wb.active
-    print("ws sheet")
-    print(ws)
-
-    customers=Customer.objects.get(name=request.user)
-
-    print("customers")
-    print(customers)   
-
-    data=[{'name': customers.name.username,
-    'location': customers.location, 
-    'city': customers.city}]
-    
-    # for obj in customers:
-    #    data.append({
-    #       'name': obj.name.username,
-    #       'location': obj.location, 
-    #       'city': obj.city
-    #    })
-       
-    print("data")
-    print(data)
-
-    pd.DataFrame(data).to_excel(target)
-
-    file_path1='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/original.xlsx'
-    print("file_path1")
-    print(file_path1)
-    file_split1=file_path1.split("static")[1]
-    print("file_split1")
-    print(file_split1)
-
-    old_url= f"http://127.0.0.1:8000/static{file_split1}"
-    print("old_url")
-    print(old_url)
-
-    file_path2='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
-    print("file_path2")
-    print(file_path2)
-    file_split2=file_path2.split("static")[1]
-    print("file_split2")
-    print(file_split2)
-
-    new_url= f"http://127.0.0.1:8000/static{file_split2}"
-    print("new_url")
-    print(new_url)
-    
-    user=request.user
-    email=request.user.email
-   
-    print("user")      
-    print(user)
-    print("email")
-    print(email)
-      
-    subject="Excel data"
-    
-    message=f"Hello this is a exported data:\n {new_url},Your credentials are: Username:{request.user},Password:{request.user.password}"    
-    
-    print("message")
-    print(message)
-    recipient_list=[email]
-    print("recipient list")
-    print(recipient_list)
-    
-    # file_paths=[file_path1,file_path2]
-    # print("file_paths")
-    # print(file_paths)
-    
-    target_file=excel_writer(request,old_url,new_url)
-
-    send_mail_with_attachments.delay(subject,message,recipient_list,file_path2)
-
-    # return redirect( target_file)
-    return HttpResponse("Email send successfully")
   
+  if request.method=="POST":
+    try:
+      email_id=request.POST['email_id']    
+      response={}
+      error_response = {}
+      error_count=0
+      if email_id=="":
+        error_count = 1
+        error_response['email_id'] = "Please Enter email_id" 
+      else:       
+        email_id=request.POST['email_id']
+    
+    except Exception as e:
+      response['error'] = True     
+  
+  original='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/original.xlsx'
+  print("original")
+  print(original)
+  target = 'C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
+  print("target")
+  print(target)
+  
+  shutil.copyfile(original, target)
+
+  wb = openpyxl.load_workbook(target)
+  print("wb")
+  print(wb)
+  
+  ws = wb.active
+  print("ws sheet")
+  print(ws)
+
+  customers=Customer.objects.get(name=request.user)
+
+  print("customers")
+  print(customers)   
+
+  data=[{'name': customers.name.username,
+  'location': customers.location, 
+  'city': customers.city}]
+  
+      
+  print("data")
+  print(data)
+
+  pd.DataFrame(data).to_excel(target)
+
+  file_path1='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/original.xlsx'
+  print("file_path1")
+  print(file_path1)
+  file_split1=file_path1.split("static")[1]
+  print("file_split1")
+  print(file_split1)
+
+  old_url= f"http://127.0.0.1:8000/static{file_split1}"
+  print("old_url")
+  print(old_url)
+
+  file_path2='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
+  print("file_path2")
+  print(file_path2)
+  file_split2=file_path2.split("static")[1]
+  print("file_split2")
+  print(file_split2)
+
+  new_url= f"http://127.0.0.1:8000/static{file_split2}"
+  print("new_url")
+  print(new_url)
+    
+  user=request.user
+  email=request.user.email
+  
+  print("user")      
+  print(user)
+  print("email")
+  print(email)
+   
+  subject="Excel data"
+  
+  message=f"Hello this is a exported data:\n {new_url},Your credentials are: Username:{request.user},Password:{request.user.password}"    
+  
+  print("message")
+  print(message)
+  recipient_list=[email]
+  print("recipient list")
+  print(recipient_list)
+  
+  users=get_user_model().objects.all()
+  for user in users:
+        print("mailing")       
+        to_email=user.email
+        print(to_email)
+  
+        
+  send_mail_with_attachments.delay(subject,message,recipient_list,file_path2)
+  return HttpResponse("Email send successfully")

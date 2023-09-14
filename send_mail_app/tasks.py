@@ -69,7 +69,6 @@ def send_mail_with_attachments(subject, message, recipient_list, file_path):
     mail.send(fail_silently=False)
 
 
-
 from docx2pdf import convert
 from time import sleep
 @shared_task

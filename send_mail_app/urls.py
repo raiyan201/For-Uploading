@@ -1,6 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from .import views
+
 urlpatterns = [
    
     path('', views.send_mail_to_gmail,name="home"),
@@ -16,5 +17,4 @@ urlpatterns = [
     path('mailing',views.mailing,name='mailing'),
     path('file-convert',views.file_convert,name='file-convert'),
     path('<task_id>',views.checkstatus,name="check-status")
-
 ]
