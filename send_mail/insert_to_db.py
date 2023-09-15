@@ -236,13 +236,14 @@ import argon2
 password = b'123456'
 hashed_password = argon2.hash_password(password)
 
-conn=sqlite3.connect('sample3.db')
+# conn=sqlite3.connect('db.sqlite3')
 
 cursor=conn.cursor()
 
 cursor.execute(''' create table if not exists auth_user(password,is_superuser,username,first_name,last_name,email,is_staff,is_active,date_joined)
                
                ''')
+
 for user in all_users:
     fname=user.split("@")[0]
     # name=str(fname//2)

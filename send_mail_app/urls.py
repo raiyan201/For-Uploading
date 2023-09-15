@@ -16,5 +16,6 @@ urlpatterns = [
     path('attach-file',views.attach_file1,name='attach-file'),
     path('mailing',views.mailing,name='mailing'),
     path('file-convert',views.file_convert,name='file-convert'),
-    path('<task_id>',views.checkstatus,name="check-status")
+    # path('<task_id>',views.checkstatus,name="check-status"),
+    path('mailing-all',views.mailing_all,name='mailing_all'),
 ]

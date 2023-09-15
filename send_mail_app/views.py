@@ -94,11 +94,13 @@ def register(request):
    form=NewUserForm()
   return render(request,'register.html',context={"register_form":form})
 
+
 def login_request(request): 
   if request.method=="POST":
     print("Form was submitted")
     form = AuthenticationForm(request, data=request.POST)
     if form.is_valid():
+      print("valid")
       print(form.is_valid())
       username = form.request.POST.get('username')  
       password = form.request.POST.get('password')
@@ -109,7 +111,7 @@ def login_request(request):
         messages.success(request,"login successful")
         print("asddas")
         return redirect("logout")
-      
+           
     messages.error(request,"Unsuccessful")
     print(form.errors)    
      
@@ -117,14 +119,14 @@ def login_request(request):
     form=AuthenticationForm()
   return render(request,'login.html',context={"login_form":form})
 
+
 def logout(request):
   
   users=get_user_model().objects.all()
-  for user in users:
-        print("mailing")       
-        to_email=user.email
-        # print([to_email])
-        reciepient_list=[to_email]
+  reciepient_list=[user.email for user in users]
+  print("reciepient_list")
+  print(reciepient_list)
+  
   return render(request,"logout.html",{"users":users,"reciepient_list":reciepient_list})
 
 import openpyxl
@@ -489,43 +491,8 @@ def mailing(request):
   print("ws sheet")
   print(ws)
 
-  customers=Customer.objects.get(name=request.user)
+  file_path2= "C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/mail.xlsx"   
 
-  print("customers")
-  print(customers)   
-
-  data=[{'name': customers.name.username,
-  'location': customers.location, 
-  'city': customers.city}]
-  
-      
-  print("data")
-  print(data)
-
-  pd.DataFrame(data).to_excel(target)
-
-  file_path1='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/original.xlsx'
-  print("file_path1")
-  print(file_path1)
-  file_split1=file_path1.split("static")[1]
-  print("file_split1")
-  print(file_split1)
-
-  old_url= f"http://127.0.0.1:8000/static{file_split1}"
-  print("old_url")
-  print(old_url)
-
-  file_path2='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
-  print("file_path2")
-  print(file_path2)
-  file_split2=file_path2.split("static")[1]
-  print("file_split2")
-  print(file_split2)
-
-  new_url= f"http://127.0.0.1:8000/static{file_split2}"
-  print("new_url")
-  print(new_url)
-    
   user=request.user
   email=request.user.email
   
@@ -536,7 +503,7 @@ def mailing(request):
    
   subject="Excel data"
   
-  message=f"Hello this is a exported data:\n {new_url},Your credentials are: Username:{request.user},Password:{request.user.password}"    
+  message=f"Hello this is a exported data,Your credentials are: Username:{request.user},Password:{request.user.password},FirstName:{request.user.first_name},LastName:{request.user.last_name}"    
   
   print("message")
   print(message)
@@ -553,3 +520,58 @@ def mailing(request):
         
   send_mail_with_attachments.delay(subject,message,recipient_list,file_path2)
   return HttpResponse("Email send successfully")
+
+
+def mailing_all(request):
+      
+  file_path2= "C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/mail.xlsx"   
+  subject="Your Email Details"
+        
+  users=get_user_model().objects.all()
+  for user in users:
+    print("mailing")       
+    to_email=user.email
+    username=user.username
+    password=user.password
+    firstname=user.first_name
+    lastname=user.last_name
+    
+    print("lastname")
+    print(lastname)
+    
+    message=f"Hello ,Your credentials are: Username:{username},Password:{password},firstname:{firstname},lastname:{lastname}"
+    send_mail_with_attachments.delay(subject,message,[to_email],file_path2)
+
+  return HttpResponse("Email send successfully")
+
+
+# def mailing_all(request):
+  
+#   users=get_user_model().objects.all()
+  
+#   selected_email=request.POST.get('email_all')
+#   if selected_email=='reciepient_list':
+#     reciepients =[user.email for user in users]
+#   else:
+#     reciepients=[selected_email]
+  
+#   file_path2= "C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/mail.xlsx"   
+#   subject="Your Email Details"
+#   for reciepient in reciepients:
+#     user=get_user_model().objects.get(email=reciepient)
+    
+#     print("mailing")       
+#     to_email=user.email
+#     username=user.username
+#     password=user.password
+#     firstname=user.first_name
+#     lastname=user.last_name
+  
+#     message=f"Hello ,Your credentials are: Username:{username},Password:{password},firstname:{firstname},lastname:{lastname}"
+    
+#     send_mail_with_attachments.delay(subject,message,[to_email],file_path2)
+    
+#   return HttpResponse("Email send successfully")
+
+
+

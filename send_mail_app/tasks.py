@@ -54,12 +54,6 @@ def sending_mail(email_messages):
     send_mass_mail(email_messages, fail_silently=False)
 
 
-# @shared_task
-# def send_mail_with_attachments(argument):
-#     mail=EmailMessage(subject=subject,body=message,from_email=settings.EMAIL_HOST_USER,to=recipient_list)
-#     mail.attach_file(file_path)
-#     mail.send(argument,fail_silently=False)
-
 
 @shared_task
 def send_mail_with_attachments(subject, message, recipient_list, file_path):

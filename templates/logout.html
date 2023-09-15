@@ -25,22 +25,40 @@
   <option value="">None</option>
   <option value="{{request.user.email}}">{{request.user.email}}</option>    
 </select> 
-
-{% comment %} <br>
-<label for="email_all">All Email</label>
-<span id="email_all" style="color:red;"></span>
-
-<select name="email_all" id="email_all">
-   <option value=reciepient_list>All</option>
-   {% for user in users %}
-   <option value="{{user.email}}">{{user.email}}</option>
-   {% endfor %}
-</select>   {% endcomment %}
-
-{% comment %} <button type="submit" class="btn btn-outline-info"><a href="{% url 'mailing' %}">Send</a></button> {% endcomment %}
 <button type="submit" class="btn btn-outline-info">Send</a></button>    
-
 </form>
+
+
+{% comment %} <div class="form-check">
+  <input class="form-check-input" type="checkbox" value="Scheduler" id="Scheduler">
+  <label class="form-check-label" for="Scheduler">
+  Scheduler
+  </label>
+</div> {% endcomment %}
+
+
+
+{% if user.is_superuser %}
+<form name="myForm2" action={% url 'mailing_all' %} onsubmit="return validateForm2()" method="post">
+  {% csrf_token %}
+  <br>
+  <label for="email_all">All Email</label>
+  <span id="email_all" style="color:red;"></span>
+
+  <select name="email_all" id="email_all">
+     <option value=reciepient_list>All</option>
+     {% for user in users %}
+     <option value="{{user.email}}">{{user.email}}</option>
+     {% endfor %}
+</select>   
+
+<button type="submit" class="btn btn-outline-info">Send</a></button>  
+</form>
+
+{% comment %} <button type="button">Email-History</button> {% endcomment %}
+
+{% endif %}  
+
 
 {% else%}
 <h1>Please Login First</h1>
@@ -48,7 +66,8 @@
 {% endif %}
 </div>
 
-{% comment %} <script>
+
+<script>
       function validateForm(){
           debugger;
           let x=document.forms["myForm"]["email_id"].value;
@@ -59,4 +78,19 @@
           window.location.href="{% url 'mailing' %}";
           return false        
         }
-</script> {% endcomment %}
+</script> 
+
+
+<script>
+
+  function validateForm2(){
+      debugger;
+      let x=document.forms["myForm2"]["email_all"].value;
+      if (x=="") {
+          document.getElementById("email_all").innerHTML=  "Required";  
+          return false;
+      }
+      return true;          
+  }
+
+</script>
