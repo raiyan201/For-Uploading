@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Document</title>
+    <script>
+
+        function show(btn1){
+
+            var datefield=document.getElementById('datefield');
+            var timefield=document.getElementById('timefield');
+
+            if (btn1.value=="yes"){
+                datefield.style.display="block"
+                timefield.style.display="block"
+                btn1.value="no"
+            }
+
+            else{
+                
+                datefield.style.display="none"
+                timefield.style.display="none"
+                btn1.value="yes"
+            }            
+        }
+
+        function show2(btn2){
+            var check1=document.getElementById('check1');
+            if(btn2.value=="yes"){
+            check1.style.display="block"
+            btn2.value="no"
+        }
+
+        else{
+        
+            check1.style.display="none"
+            btn2.value="yes"
+        }
+    }
+
+    </script>
+</head>
+
+<body>
+
+    <div>scheduler</div>
+    
+    <input type="button" id="btn1" value="yes" onclick="show(this)">
+    <div id="datefield" style="display:none">
+        Date:
+        <input type="date" id="date" name="date">
+</div>
+
+<div id="timefield" style="display: none">
+        Time:
+        <input type="time" name="time" id="time">
+        <div>Refresh Period</div>
+
+        <input type="button" id="btn2" value="yes" onclick="show2(this)">
+
+        <div id="check1" style="display:none">
+            monthly:
+            <input type="checkbox" name="monthly" id="monthly">
+            weekly:
+            <input type="checkbox" name="weekly" id="weekly">
+            hourly:
+            <input type="checkbox" name="hourly" id="hourly">
+            yearly:
+            <input type="checkbox" name="yearly" id="yearly">
+        </div>      
+    </div>
+
+</body>
+</html>

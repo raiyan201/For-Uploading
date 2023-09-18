@@ -1,7 +1,7 @@
 from django.shortcuts import render,HttpResponse,redirect,HttpResponseRedirect
 from send_mail_app.tasks import sending_mail
-from send_mail_app.tasks import send_mail_function
-from send_mail_app.tasks import send_mail_with_atachments
+# from send_mail_app.tasks import send_mail_function
+# from send_mail_app.tasks import send_mail_with_atachments
 from send_mail_app.tasks import send_mail_with_attachments
 from django.conf import settings
 from .models import Employee,Customer
@@ -16,6 +16,8 @@ import json
 
 from django.http import HttpResponse
 from django.contrib.auth import get_user_model
+
+from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSchedule
 
 
 def send_mail_to_gmail(request):
@@ -455,13 +457,68 @@ def checkstatus(request,task_id):
   context={'task_status':task_status}  
   return render(request,'checkstatus.html',context)
 
-
-
+import uuid
 def mailing(request):
-  
   if request.method=="POST":
-    try:
+    try:      
+      # mailsendtime=request.POST['dateTime']
+      # print("mailsendtime")
+      # print(mailsendtime)
       email_id=request.POST['email_id']    
+      full_date=request.POST['date']
+      print("full_date")
+      full_date=full_date.split("-")
+      print(full_date)
+      year=full_date[0]
+      print("year")
+      print(year)
+      print("month")
+      month=full_date[1]
+      print(month)
+      date=full_date[2]
+      print("date")
+      print(date)
+      
+      timing=request.POST['timing']
+      print("timing")
+      timing=timing.split(":")
+      print(timing)
+      hour=timing[0]
+      minutes=timing[1]
+      print("hour")
+      print(hour)
+      print("minutes")
+      print(minutes)
+      
+      chon_schedule = CrontabSchedule.objects.create(minute=minutes, hour=hour, day_of_week='*', day_of_month=date, month_of_year=month)
+      print("chon_schedule") 
+      print(chon_schedule)
+      
+      create_schedule = PeriodicTask.objects.create(name=str("xyz"+str(uuid.uuid4())),crontab=chon_schedule)
+      print("create_schedule") 
+      print(create_schedule)
+       
+      # monthly=request.POST['monthly']
+      # print("monthly")
+      # print(monthly)
+      
+      # weekly=request.POST['weekly']
+      # print("weekly")
+      # print(weekly)
+      
+      # hourly=request.POST['hourly']
+      # print("hourly")
+      # print(hourly)
+      
+      # daily=request.POST['daily']
+      # print("daily")
+      # print(daily)
+      
+      # chon_schedule = CrontabSchedule.objects.create(minute='40', hour='08', day_of_week='*', day_of_month='*', month_of_year='*') # To create a cron schedule. 
+      # schedule = IntervalSchedule.objects.create(every=10, period=IntervalSchedule.SECONDS) # To create a schedule to run everu 10 min.
+      # PeriodicTask.objects.create(crontab=chon_schedule, name='name_to_identify_task',task='name_of_task') # It creates a entry in the database describing that periodic task (With cron schedule).
+      # task = PeriodicTask.objects.create(interval=schedule, name='run for every 10 min', task='for_each_ten_min', ) # It creates a periodic task with interval schedule
+
       response={}
       error_response = {}
       error_count=0
@@ -473,29 +530,12 @@ def mailing(request):
     
     except Exception as e:
       response['error'] = True     
-  
-  original='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/original.xlsx'
-  print("original")
-  print(original)
-  target = 'C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
-  print("target")
-  print(target)
-  
-  shutil.copyfile(original, target)
-
-  wb = openpyxl.load_workbook(target)
-  print("wb")
-  print(wb)
-  
-  ws = wb.active
-  print("ws sheet")
-  print(ws)
 
   file_path2= "C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/mail.xlsx"   
 
   user=request.user
   email=request.user.email
-  
+    
   print("user")      
   print(user)
   print("email")
@@ -512,22 +552,22 @@ def mailing(request):
   print(recipient_list)
   
   users=get_user_model().objects.all()
-  for user in users:
-        print("mailing")       
-        to_email=user.email
-        print(to_email)
+
+  from datetime import datetime
+  schedule_time = datetime(int(year), int(month), int(date), int(hour), int(minutes))
   
-        
-  send_mail_with_attachments.delay(subject,message,recipient_list,file_path2)
+  # send_mail_with_attachments.delay(subject,message,recipient_list,file_path2)
+  
+  send_mail_with_attachments.apply_async((subject,message,recipient_list,file_path2),eta=schedule_time)
+  
   return HttpResponse("Email send successfully")
 
 
-def mailing_all(request):
-      
+def mailing_all(request):      
   file_path2= "C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/mail.xlsx"   
   subject="Your Email Details"
-        
   users=get_user_model().objects.all()
+  
   for user in users:
     print("mailing")       
     to_email=user.email
@@ -538,7 +578,7 @@ def mailing_all(request):
     
     print("lastname")
     print(lastname)
-    
+
     message=f"Hello ,Your credentials are: Username:{username},Password:{password},firstname:{firstname},lastname:{lastname}"
     send_mail_with_attachments.delay(subject,message,[to_email],file_path2)
 
