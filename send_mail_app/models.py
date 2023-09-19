@@ -21,6 +21,21 @@ class Customer(models.Model):
         return str(self.name)
     
 
-
+class EmailHistory(models.Model):
+    email_from=models.EmailField()
+    email_to=models.EmailField()
+    
+    STATUS_CHOICES = [
+    ('Success', 'Success'),
+    ('Failed', 'Failed'),
+    ('Pending', 'Pending'),
+    ]
+    
+    status = models.CharField(max_length=100, choices=STATUS_CHOICES)
+    # status=models.CharField(max_length=100)    
+    dateTime= models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return self.status
     
 

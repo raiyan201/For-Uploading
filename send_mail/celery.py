@@ -37,12 +37,12 @@ from celery.schedules import solar
 
 # from send_mail_app.views import mailing
 
-app.conf.beat_schedule = {
-    'send-mail-at-3 every-day': {
-        'task': 'send_mail_app.tasks.send_mail_with_attachments',
-        'schedule': crontab(hour=16, minute=1),
-        'args': ('subject_', 'Message1', ['raiyanar0@gmail.com'], f"{settings.BASE_DIR}/static/target.xlsx")
-    }
-}
+# app.conf.beat_schedule = {
+#     'send-mail-at-3 every-day': {
+#         'task': 'send_mail_app.tasks.send_mail_with_attachments',
+#         'schedule': crontab(hour=16, minute=1),
+#         'args': ('subject_', 'Message1', ['raiyanar0@gmail.com'], f"{settings.BASE_DIR}/static/target.xlsx")
+#     }
+# }
 
 app.autodiscover_tasks(lambda:settings.INSTALLED_APPS)

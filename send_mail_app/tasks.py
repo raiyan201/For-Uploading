@@ -62,22 +62,25 @@ from datetime import datetime
 # int(hour),int(minutes))                                       
                                               
                        
-@shared_task
+# @shared_task
+# def send_mail_with_attachments(subject, message, recipient_list, file_path, year, month, date, hour, minutes):
+#     schedule_time = datetime(int(year), int(month), int(date), int(hour), int(minutes))
+#     mail = EmailMessage(subject=subject, body=message, from_email=settings.EMAIL_HOST_USER, to=recipient_list)
+#     mail.attach_file(file_path)
+#     mail.send(fail_silently=False)
 
-def send_mail_with_attachments(subject, message, recipient_list, file_path, year, month, date, hour, minutes):
-    schedule_time = datetime(int(year), int(month), int(date), int(hour), int(minutes))
+@shared_task
+def send_mail_with_attachments(subject, message, recipient_list, file_path):
     mail = EmailMessage(subject=subject, body=message, from_email=settings.EMAIL_HOST_USER, to=recipient_list)
     mail.attach_file(file_path)
     mail.send(fail_silently=False)
 
 
 
-
 from docx2pdf import convert
 from time import sleep
 @shared_task
-def doc_to_pdf(files):
-    
+def doc_to_pdf(files):    
     sleep(10)
     convert('static/' + files)
     return None

@@ -4,7 +4,7 @@ from send_mail_app.tasks import sending_mail
 # from send_mail_app.tasks import send_mail_with_atachments
 from send_mail_app.tasks import send_mail_with_attachments
 from django.conf import settings
-from .models import Employee,Customer
+from .models import Employee,Customer,EmailHistory
 # Create your views here.
 from django.contrib.auth import get_user_model
 from django.http import HttpResponse
@@ -458,54 +458,67 @@ def checkstatus(request,task_id):
   return render(request,'checkstatus.html',context)
 
 import uuid
+import json
+import datetime
+
 def mailing(request):
+  response={}
   if request.method=="POST":
     try:      
-      # mailsendtime=request.POST['dateTime']
-      # print("mailsendtime")
-      # print(mailsendtime)
       email_id=request.POST['email_id']    
       full_date=request.POST['date']
-      print("full_date")
-      full_date=full_date.split("-")
-      print(full_date)
-      year=full_date[0]
-      print("year")
-      print(year)
-      print("month")
-      month=full_date[1]
-      print(month)
-      date=full_date[2]
-      print("date")
-      print(date)
-      
       timing=request.POST['timing']
-      print("timing")
-      timing=timing.split(":")
-      print(timing)
-      hour=timing[0]
-      minutes=timing[1]
-      print("hour")
-      print(hour)
-      print("minutes")
-      print(minutes)
+      print("full_date")
+      get_date=full_date
+      if get_date:
+        full_date=full_date.split("-")
+        print(full_date)
+        year=full_date[0]
+        print("year")
+        print(year)
+        print("month")
+        month=full_date[1]
+        print(month)
+        date=full_date[2]
+        
+        print("date")
+        print(date)
       
-      chon_schedule = CrontabSchedule.objects.create(minute=minutes, hour=hour, day_of_week='*', day_of_month=date, month_of_year=month)
-      print("chon_schedule") 
-      print(chon_schedule)
       
-      create_schedule = PeriodicTask.objects.create(name=str("xyz"+str(uuid.uuid4())),crontab=chon_schedule)
-      print("create_schedule") 
-      print(create_schedule)
-       
+      if timing:
+         
+        print("timing")
+        timing=timing.split(":")
+        print(timing)
+        hour=timing[0]
+        minutes=timing[1]
+        print("hour")
+        print(hour)
+        print("minutes")
+        print(minutes)
+      
+      if not email_id:
+        return HttpResponse("Please Enter email_id")
+      
+      monthly = request.POST.get('monthly', False)
+      print("monthly")
+      print(monthly)      
+      weekly = request.POST.get('weekly', False)
+      print("weekly")
+      print(weekly)    
+      hourly = request.POST.get('hourly', False)
+      print("hourly")
+      print(hourly)
+      daily = request.POST.get('daily', False)
+      print("daily")
+      print(daily)
+      
       # monthly=request.POST['monthly']
       # print("monthly")
-      # print(monthly)
-      
+      # print(monthly)      
       # weekly=request.POST['weekly']
       # print("weekly")
-      # print(weekly)
-      
+      # print(weekly)      
       # hourly=request.POST['hourly']
       # print("hourly")
       # print(hourly)
@@ -514,60 +527,103 @@ def mailing(request):
       # print("daily")
       # print(daily)
       
-      # chon_schedule = CrontabSchedule.objects.create(minute='40', hour='08', day_of_week='*', day_of_month='*', month_of_year='*') # To create a cron schedule. 
-      # schedule = IntervalSchedule.objects.create(every=10, period=IntervalSchedule.SECONDS) # To create a schedule to run everu 10 min.
-      # PeriodicTask.objects.create(crontab=chon_schedule, name='name_to_identify_task',task='name_of_task') # It creates a entry in the database describing that periodic task (With cron schedule).
-      # task = PeriodicTask.objects.create(interval=schedule, name='run for every 10 min', task='for_each_ten_min', ) # It creates a periodic task with interval schedule
-
-      response={}
-      error_response = {}
-      error_count=0
-      if email_id=="":
-        error_count = 1
-        error_response['email_id'] = "Please Enter email_id" 
-      else:       
-        email_id=request.POST['email_id']
-    
     except Exception as e:
-      response['error'] = True     
+      response['error'] = True 
+      response['message'] = str(e)
+      print("Exception occurred:", e)
+            
+    file_path2= "C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/mail.xlsx"   
+    user=request.user
+    email=request.user.email
+    host_user_email=settings.EMAIL_HOST_USER
 
-  file_path2= "C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/mail.xlsx"   
-
-  user=request.user
-  email=request.user.email
+    import re    
+    def check(s):
+      pat = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+      if re.match(pat,s):
+        return True
+      else:
+       return False
+     
+    if check(host_user_email) and check(email):
+     status="Success"
+    else:
+     status="Failed"
+  
+    model=EmailHistory(email_from=host_user_email,email_to=email,status=status)
+    model.save()    
     
-  print("user")      
-  print(user)
-  print("email")
-  print(email)
-   
-  subject="Excel data"
-  
-  message=f"Hello this is a exported data,Your credentials are: Username:{request.user},Password:{request.user.password},FirstName:{request.user.first_name},LastName:{request.user.last_name}"    
-  
-  print("message")
-  print(message)
-  recipient_list=[email]
-  print("recipient list")
-  print(recipient_list)
-  
-  users=get_user_model().objects.all()
+    print("user")      
+    print(user)
+    print("email")
+    print(email)
+    subject="Excel data"
+    message=f"Hello this is a exported data,Your credentials are: Username:{request.user},Password:{request.user.password},FirstName:{request.user.first_name},LastName:{request.user.last_name}"    
+    print("message")
+    print(message)
+    recipient_list=[email]
+    print("recipient list")
+    print(recipient_list)
 
-  from datetime import datetime
-  schedule_time = datetime(int(year), int(month), int(date), int(hour), int(minutes))
-  
-  # send_mail_with_attachments.delay(subject,message,recipient_list,file_path2)
-  
-  send_mail_with_attachments.apply_async((subject,message,recipient_list,file_path2),eta=schedule_time)
-  
-  return HttpResponse("Email send successfully")
+    if get_date and timing:
+      
+     
+      chon_schedule = CrontabSchedule.objects.create(
+          minute=minutes, 
+          hour=hour, 
+          day_of_week='*', 
+          day_of_month=date, 
+          month_of_year=month
+      )
+      args = (subject, message, recipient_list, file_path2)
+      create_schedule = PeriodicTask.objects.create(
+          name="xyz" + str(uuid.uuid4()),
+          crontab=chon_schedule,
+          task='send_mail_app.tasks.send_mail_with_attachments',
+          args=json.dumps(args)
+      )
+    else:
+      send_mail_with_attachments.delay(subject, message, recipient_list, file_path2)
+      return HttpResponse("Email sent successfully")
+      
+    return HttpResponse("Email scheduled successfully")   
+   
+    
+    # else:
+    #   send_mail_with_attachments.delay(subject, message, recipient_list, file_path2)
+    #   return HttpResponse("Email sent successfully")
+          
+  #     response={}
+  #     error_response = {}
+  #     error_count=0
+  #     if email_id=="":
+  #       error_count = 1
+  #       error_response['email_id'] = "Please Enter email_id" 
+  #     else:       
+  #       email_id=request.POST['email_id']
+        
+  #     response['message'] = "Emmail scheduled successfully"
+ 
+  # return HttpResponse("Email scheduled successfully")
 
 
 def mailing_all(request):      
+  
   file_path2= "C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/mail.xlsx"   
   subject="Your Email Details"
   users=get_user_model().objects.all()
   
+  import re
+  
+  def check(s):
+    pat = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+    if re.match(pat,s):
+      return True
+    else:
+       return False
+     
+  host_user_email=settings.EMAIL_HOST_USER        
+  users=get_user_model().objects.all()
   for user in users:
     print("mailing")       
     to_email=user.email
@@ -576,12 +632,28 @@ def mailing_all(request):
     firstname=user.first_name
     lastname=user.last_name
     
-    print("lastname")
-    print(lastname)
+    if check(host_user_email) and check(to_email):
+       status="Success"
+    else:
+       status="Failed"
+    
+    model=EmailHistory(email_from=host_user_email,email_to=to_email,status=status)
+    model.save()
+  
+  # for user in users:
+  #   print("mailing")       
+  #   to_email=user.email
+  #   username=user.username
+  #   password=user.password
+  #   firstname=user.first_name
+  #   lastname=user.last_name
+    
+  #   print("lastname")
+  #   print(lastname)
 
-    message=f"Hello ,Your credentials are: Username:{username},Password:{password},firstname:{firstname},lastname:{lastname}"
-    send_mail_with_attachments.delay(subject,message,[to_email],file_path2)
-
+  message=f"Hello ,Your credentials are: Username:{username},Password:{password},firstname:{firstname},lastname:{lastname}"
+  send_mail_with_attachments.delay(subject,message,[to_email],file_path2)
+  
   return HttpResponse("Email send successfully")
 
 
