@@ -41,24 +41,26 @@
 
     <input type="button" id="btn2" value="yes" onclick="show2(this)">
 
-    <div id="check1" style="display:none">
+      <div id="check1" style="display:none">
         monthly:
-        <input type="checkbox" name="monthly" id="monthly">
+        <input type="radio" name="refresh_period" id="monthly" value="monthly">
         weekly:
-        <input type="checkbox" name="weekly" id="weekly">
+        <input type="radio" name="refresh_period" id="weekly" value="weekly">
         hourly:
-        <input type="checkbox" name="hourly" id="hourly">
+        <input type="radio" name="refresh_period" id="hourly" value="hourly">
         daily:
-        <input type="checkbox" name="daily" id="daily">
-    
+        <input type="radio" name="refresh_period" id="daily" value="daily">
       </div>
+    </div>
 
-</div>
 <button type="submit" class="btn btn-outline-info">Send</a></button>    
 
 </form>
 
 {% if user.is_superuser %}
+<div class="d-flex justify-content-end">
+  <a href="{% url 'email-history' %}" class="btn btn-success">Email History</a>
+</div>
 <form name="myForm2" action={% url 'mailing_all' %} onsubmit="return validateForm2()" method="post">
   {% csrf_token %}
   <br>
@@ -69,10 +71,39 @@
      {% for user in users %}
      <option value="{{user.email}}">{{user.email}}</option>
      {% endfor %}
-</select>
+  
+  </select>
 
+<div>scheduler</div>    
+  <input type="button" id="btn3" value="yes" onclick="show3(this)">
+  <div id="datefield2" style="display:none">
+      Date:
+      <input type="date" id="date" name="date">
+  </div>
+  
+  <div id="timefield2" style="display:none">
+      Time:
+      <input type="time" name="timing" id="timing">
+      <div>Refresh Period</div>
+  
+      <input type="button" id="btn4" value="yes" onclick="show4(this)">
+  
+        <div id="check2" style="display:none">
+          monthly:
+          <input type="radio" name="refresh_period" id="monthly">
+          weekly:
+          <input type="radio" name="refresh_period" id="weekly">
+          hourly:
+          <input type="radio" name="refresh_period" id="hourly">
+          daily:
+          <input type="radio" name="refresh_period" id="daily">
+      
+        </div>
+      </div>
+ 
 <button type="submit" class="btn btn-outline-info">Send</a></button>  
 </form>
+
 
 {% endif %}  
 
@@ -111,6 +142,7 @@
       }
       return true;          
   }
+
 </script>
 <script>
 
@@ -140,4 +172,37 @@ function show2(btn2){
       btn2.value="yes"
   }
 }
+</script>
+
+<script>
+
+  function show3(btn3){
+    var datefield2=document.getElementById('datefield2');
+    var timefield2=document.getElementById('timefield2');
+    if (btn3.value=="yes"){
+        datefield2.style.display="block"
+        timefield2.style.display="block"
+        btn3.value="no"
+    }
+    else{
+        datefield2.style.display="none"
+        timefield2.style.display="none"
+        btn3.value="yes"
+    }            
+  }
+  
+  
+  function show4(btn4){
+    var check2=document.getElementById('check2');
+    if(btn4.value=="yes"){
+    check2.style.display="block"
+    btn4.value="no"
+  }
+
+else{ 
+    check2.style.display="none"
+    btn4.value="yes"
+}
+}
+
 </script>

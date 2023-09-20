@@ -13,12 +13,23 @@ from django.core.mail import EmailMessage
 # from send_mail_app.tasks import send_b_mail
 from send_mail_app.tasks import doc_to_pdf
 import json
+import uuid
+import json
+import datetime
+from .forms import NewUserForm
+from django.contrib.auth import login,authenticate
+from django.contrib.auth import login as auth_login    
+from django.contrib.auth.forms import AuthenticationForm 
+from django.contrib import messages    
 
 from django.http import HttpResponse
 from django.contrib.auth import get_user_model
-
 from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSchedule
+from django.core.files.storage import FileSystemStorage
+from docx2pdf import convert
+from celery.result import AsyncResult
 
+import os
 
 def send_mail_to_gmail(request):
     send_mail_function.delay()
@@ -33,8 +44,6 @@ def send_mail_to_gmail(request):
 #     file_path = f"{settings.BASE_DIR}/mail.xlsx"
 #     send_mail_with_atachments(subject,message,recipient_list,file_path)
 #     return HttpResponse("mail send check it")
-
-
 
 def send_xlsx(request):
                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        
@@ -74,15 +83,7 @@ def export_data_xls(request):
     return JsonResponse({
         'status':200
     })
-    
-    
-from .forms import NewUserForm
-from django.contrib.auth import login,authenticate
-from django.contrib.auth import login as auth_login    
-from django.contrib.auth.forms import AuthenticationForm 
-from django.contrib import messages
-    
-    
+        
 def register(request):
   if request.method=="POST":
     form=NewUserForm(request.POST)
@@ -413,11 +414,7 @@ def excel_writer(request,old_url,new_url):
   # return HttpResponse("ok")
 
 
-from django.core.files.storage import FileSystemStorage
-from docx2pdf import convert
-from celery.result import AsyncResult
 
-import os
 
 def file_convert(request):
   if request.method =="POST":
@@ -457,9 +454,7 @@ def checkstatus(request,task_id):
   context={'task_status':task_status}  
   return render(request,'checkstatus.html',context)
 
-import uuid
-import json
-import datetime
+
 
 def mailing(request):
   response={}
@@ -468,6 +463,9 @@ def mailing(request):
       email_id=request.POST['email_id']    
       full_date=request.POST['date']
       timing=request.POST['timing']
+      refresh_period = request.POST.get('refresh_period', None)
+      print("Refresh Period Selected:", refresh_period)
+      
       print("full_date")
       get_date=full_date
       if get_date:
@@ -483,8 +481,7 @@ def mailing(request):
         
         print("date")
         print(date)
-      
-      
+     
       if timing:
          
         print("timing")
@@ -499,34 +496,7 @@ def mailing(request):
       
       if not email_id:
         return HttpResponse("Please Enter email_id")
-      
-      monthly = request.POST.get('monthly', False)
-      print("monthly")
-      print(monthly)      
-      weekly = request.POST.get('weekly', False)
-      print("weekly")
-      print(weekly)    
-      hourly = request.POST.get('hourly', False)
-      print("hourly")
-      print(hourly)
-      daily = request.POST.get('daily', False)
-      print("daily")
-      print(daily)
-      
-      # monthly=request.POST['monthly']
-      # print("monthly")
-      # print(monthly)      
-      # weekly=request.POST['weekly']
-      # print("weekly")
-      # print(weekly)      
-      # hourly=request.POST['hourly']
-      # print("hourly")
-      # print(hourly)
-      
-      # daily=request.POST['daily']
-      # print("daily")
-      # print(daily)
-      
+        
     except Exception as e:
       response['error'] = True 
       response['message'] = str(e)
@@ -564,47 +534,28 @@ def mailing(request):
     recipient_list=[email]
     print("recipient list")
     print(recipient_list)
-
-    if get_date and timing:
       
-     
-      chon_schedule = CrontabSchedule.objects.create(
+    
+    if get_date and timing:      
+        chon_schedule = CrontabSchedule.objects.create(
           minute=minutes, 
-          hour=hour, 
-          day_of_week='*', 
+          hour=hour,          
           day_of_month=date, 
-          month_of_year=month
+          month_of_year=month,
+          day_of_week='*', 
       )
-      args = (subject, message, recipient_list, file_path2)
-      create_schedule = PeriodicTask.objects.create(
+        args = (subject, message, recipient_list, file_path2)
+        create_schedule = PeriodicTask.objects.create(
           name="xyz" + str(uuid.uuid4()),
           crontab=chon_schedule,
           task='send_mail_app.tasks.send_mail_with_attachments',
           args=json.dumps(args)
-      )
+      )      
+        return HttpResponse("Email schedule successfully")      
     else:
       send_mail_with_attachments.delay(subject, message, recipient_list, file_path2)
       return HttpResponse("Email sent successfully")
-      
-    return HttpResponse("Email scheduled successfully")   
-   
-    
-    # else:
-    #   send_mail_with_attachments.delay(subject, message, recipient_list, file_path2)
-    #   return HttpResponse("Email sent successfully")
-          
-  #     response={}
-  #     error_response = {}
-  #     error_count=0
-  #     if email_id=="":
-  #       error_count = 1
-  #       error_response['email_id'] = "Please Enter email_id" 
-  #     else:       
-  #       email_id=request.POST['email_id']
-        
-  #     response['message'] = "Emmail scheduled successfully"
- 
-  # return HttpResponse("Email scheduled successfully")
+
 
 
 def mailing_all(request):      
@@ -624,6 +575,7 @@ def mailing_all(request):
      
   host_user_email=settings.EMAIL_HOST_USER        
   users=get_user_model().objects.all()
+  
   for user in users:
     print("mailing")       
     to_email=user.email
@@ -639,17 +591,6 @@ def mailing_all(request):
     
     model=EmailHistory(email_from=host_user_email,email_to=to_email,status=status)
     model.save()
-  
-  # for user in users:
-  #   print("mailing")       
-  #   to_email=user.email
-  #   username=user.username
-  #   password=user.password
-  #   firstname=user.first_name
-  #   lastname=user.last_name
-    
-  #   print("lastname")
-  #   print(lastname)
 
   message=f"Hello ,Your credentials are: Username:{username},Password:{password},firstname:{firstname},lastname:{lastname}"
   send_mail_with_attachments.delay(subject,message,[to_email],file_path2)
@@ -686,4 +627,7 @@ def mailing_all(request):
 #   return HttpResponse("Email send successfully")
 
 
-
+def email_history(request):
+  email_history=EmailHistory.objects.all().order_by('-dateTime')
+  return render(request,'email_history.html',{'email_history':email_history})
+ 
