@@ -455,19 +455,21 @@ def checkstatus(request,task_id):
   return render(request,'checkstatus.html',context)
 
 
-
 def mailing(request):
   response={}
   if request.method=="POST":
     try:      
       email_id=request.POST['email_id']    
       full_date=request.POST['date']
+      full_date_new=request.POST['date_new']
       timing=request.POST['timing']
       refresh_period = request.POST.get('refresh_period', None)
       print("Refresh Period Selected:", refresh_period)
       
-      print("full_date")
+      print("full_date")      
       get_date=full_date
+      get_date_new=full_date_new
+    
       if get_date:
         full_date=full_date.split("-")
         print(full_date)
@@ -494,6 +496,21 @@ def mailing(request):
         print("minutes")
         print(minutes)
       
+      if get_date_new:
+        full_date_new=full_date_new.split("-")
+        print(full_date_new)
+        year_new=full_date_new[0]
+        print("year")
+        print(year_new)
+        print("month")
+        month_new=full_date_new[1]
+        print(month_new)
+        date_new=full_date_new[2]
+        
+        print("date_new")
+        print(date_new)
+        
+      
       if not email_id:
         return HttpResponse("Please Enter email_id")
         
@@ -519,7 +536,7 @@ def mailing(request):
      status="Success"
     else:
      status="Failed"
-  
+       
     model=EmailHistory(email_from=host_user_email,email_to=email,status=status)
     model.save()    
     
@@ -534,35 +551,108 @@ def mailing(request):
     recipient_list=[email]
     print("recipient list")
     print(recipient_list)
+
+    if get_date and timing:  
       
-    
-    if get_date and timing:      
+      if get_date_new:
+         combined_Date=f"{date},{date_new}"
+         print(combined_Date)
+         chon_schedule = CrontabSchedule.objects.create(
+          minute=minutes, 
+          hour=hour,          
+          day_of_month=combined_Date, 
+          month_of_year=month,
+          day_of_week='*', 
+        )
+      
+      elif refresh_period=="monthly":
+        chon_schedule = CrontabSchedule.objects.create(
+          minute=minutes, 
+          hour=hour,          
+          day_of_month=date,           
+      )   
+      
+      elif refresh_period == "weekly":
+        chon_schedule = CrontabSchedule.objects.create(minute=minutes, hour=hour, day_of_week='*')
+      elif refresh_period == "hourly":
+        chon_schedule = CrontabSchedule.objects.create(minute=minutes, hour='*') 
+      elif refresh_period == "daily":
+        chon_schedule = CrontabSchedule.objects.create(minute=minutes, hour=hour, day_of_month='*', month_of_year='*')    
+      else:     
         chon_schedule = CrontabSchedule.objects.create(
           minute=minutes, 
           hour=hour,          
           day_of_month=date, 
           month_of_year=month,
           day_of_week='*', 
-      )
-        args = (subject, message, recipient_list, file_path2)
-        create_schedule = PeriodicTask.objects.create(
-          name="xyz" + str(uuid.uuid4()),
-          crontab=chon_schedule,
-          task='send_mail_app.tasks.send_mail_with_attachments',
-          args=json.dumps(args)
+        )
+  
+      args = (subject, message, recipient_list, file_path2)
+      create_schedule = PeriodicTask.objects.create(
+        name="xyz" + str(uuid.uuid4()),
+        crontab=chon_schedule,
+        task='send_mail_app.tasks.send_mail_with_attachments',
+        args=json.dumps(args)
       )      
-        return HttpResponse("Email schedule successfully")      
+      return HttpResponse("Email schedule successfully")      
     else:
       send_mail_with_attachments.delay(subject, message, recipient_list, file_path2)
       return HttpResponse("Email sent successfully")
 
 
+# def mailing_all(request):      
+  
+#   file_path2= "C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/mail.xlsx"   
+#   subject="Your Email Details"
+#   users=get_user_model().objects.all()
+  
+#   import re
+  
+#   def check(s):
+#     pat = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+#     if re.match(pat,s):
+#       return True
+#     else:
+#        return False
+     
+#   host_user_email=settings.EMAIL_HOST_USER        
+#   users=get_user_model().objects.all()
+  
+#   for user in users:
+#     print("mailing")       
+#     to_email=user.email
+#     username=user.username
+#     password=user.password
+#     firstname=user.first_name
+#     lastname=user.last_name
+    
+#     if check(host_user_email) and check(to_email):
+#        status="Success"
+#     else:
+#        status="Failed"
+    
+#     model=EmailHistory(email_from=host_user_email,email_to=to_email,status=status)
+#     model.save()
 
-def mailing_all(request):      
+#   message=f"Hello ,Your credentials are: Username:{username},Password:{password},firstname:{firstname},lastname:{lastname}"
+#   send_mail_with_attachments.delay(subject,message,[to_email],file_path2)
+  
+#   return HttpResponse("Email send successfully")
+
+
+def mailing_all(request):
+  
+  users=get_user_model().objects.all()
+  
+  selected_email=request.POST.get('email_all')
+  print(selected_email)
+  if selected_email=='reciepient_list':
+    reciepients =[user.email for user in users]
+  else:
+    reciepients=[selected_email]
   
   file_path2= "C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/mail.xlsx"   
   subject="Your Email Details"
-  users=get_user_model().objects.all()
   
   import re
   
@@ -592,42 +682,17 @@ def mailing_all(request):
     model=EmailHistory(email_from=host_user_email,email_to=to_email,status=status)
     model.save()
 
-  message=f"Hello ,Your credentials are: Username:{username},Password:{password},firstname:{firstname},lastname:{lastname}"
-  send_mail_with_attachments.delay(subject,message,[to_email],file_path2)
-  
+    message=f"Hello ,Your credentials are: Username:{username},Password:{password},firstname:{firstname},lastname:{lastname}"
+    
+    send_mail_with_attachments.delay(subject,message,[to_email],file_path2)
+    
   return HttpResponse("Email send successfully")
 
-
-# def mailing_all(request):
-  
-#   users=get_user_model().objects.all()
-  
-#   selected_email=request.POST.get('email_all')
-#   if selected_email=='reciepient_list':
-#     reciepients =[user.email for user in users]
-#   else:
-#     reciepients=[selected_email]
-  
-#   file_path2= "C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/mail.xlsx"   
-#   subject="Your Email Details"
-#   for reciepient in reciepients:
-#     user=get_user_model().objects.get(email=reciepient)
-    
-#     print("mailing")       
-#     to_email=user.email
-#     username=user.username
-#     password=user.password
-#     firstname=user.first_name
-#     lastname=user.last_name
-  
-#     message=f"Hello ,Your credentials are: Username:{username},Password:{password},firstname:{firstname},lastname:{lastname}"
-    
-#     send_mail_with_attachments.delay(subject,message,[to_email],file_path2)
-    
-#   return HttpResponse("Email send successfully")
 
 
 def email_history(request):
   email_history=EmailHistory.objects.all().order_by('-dateTime')
   return render(request,'email_history.html',{'email_history':email_history})
  
+ 
+

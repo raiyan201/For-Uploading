@@ -29,18 +29,24 @@
 
 <div>scheduler</div>    
 <input type="button" id="btn1" value="yes" onclick="show(this)">
+
 <div id="datefield" style="display:none">
     Date:
     <input type="date" id="date" name="date">
 </div>
 
+<div id="datefield_new" style="display:none">
+  Date2(optional):
+  <input type="date" id="date_new" name="date_new">
+</div>
+
+
 <div id="timefield" style="display:none">
     Time:
     <input type="time" name="timing" id="timing">
-    <div>Refresh Period</div>
-
+  
+  <div>Refresh Period</div>
     <input type="button" id="btn2" value="yes" onclick="show2(this)">
-
       <div id="check1" style="display:none">
         monthly:
         <input type="radio" name="refresh_period" id="monthly" value="monthly">
@@ -51,7 +57,7 @@
         daily:
         <input type="radio" name="refresh_period" id="daily" value="daily">
       </div>
-    </div>
+  </div>
 
 <button type="submit" class="btn btn-outline-info">Send</a></button>    
 
@@ -147,15 +153,18 @@
 <script>
 
   function show(btn1){
-      var datefield=document.getElementById('datefield');
-      var timefield=document.getElementById('timefield');
+    var datefield=document.getElementById('datefield');
+    var datefield_new=document.getElementById('datefield_new');
+    var timefield=document.getElementById('timefield');
       if (btn1.value=="yes"){
           datefield.style.display="block"
+          datefield_new.style.display="block"
           timefield.style.display="block"
           btn1.value="no"
       }
       else{
           datefield.style.display="none"
+          datefield_new.style.display="none"
           timefield.style.display="none"
           btn1.value="yes"
       }            
