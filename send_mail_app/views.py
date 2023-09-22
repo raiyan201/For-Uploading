@@ -138,43 +138,7 @@ try:
 except ImportError:
     from openpyxl.utils import get_column_letter
 
-# def download_data(request):
-    
-#     # customer=Customer.objects.get(user=request.user)
-#     response =HttpResponse(content_type='application/ms-excel')
-#     response['Content-Disposition'] ='attachment;filename="customers.xlxs"'
-#     wb=Workbook()
-#     ws=wb.active
-#     print("ws")
-#     print(ws)
-#     # ws.title="Customers"
-    
-#     headers=["Name","Location","City"]
-#     ws.append(headers)
-    
-#     # customer=Customer.objects.get(user=request.user)
-#     customers=Customer.objects.all()
-#     print("customers")
-#     print(customers)
-    
-#     for customer in customers:
-#         print("Customer name")
-#         # print(customer.name)
-#         customer_name=str(customer.name)
-#         customer_location=str(customer.location)
-#         customer_city=str(customer.city)
-        
-#         # print(type(customer.name))
-#         # print(type(customer_name))
-        
-#         # print(customer.location)
-#         # print(customer.city)
-#         # print(type(customer.location))
-        
-#         ws.append([customer_name,customer_location,customer_city])
-        
-#     wb.save(response)
-#     return response
+
     
 def download_data(request):
     
@@ -509,8 +473,7 @@ def mailing(request):
         
         print("date_new")
         print(date_new)
-        
-      
+  
       if not email_id:
         return HttpResponse("Please Enter email_id")
         
@@ -519,7 +482,7 @@ def mailing(request):
       response['message'] = str(e)
       print("Exception occurred:", e)
             
-    file_path2= "C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/mail.xlsx"   
+    # file_path2= "C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/mail.xlsx"   
     user=request.user
     email=request.user.email
     host_user_email=settings.EMAIL_HOST_USER
@@ -538,12 +501,62 @@ def mailing(request):
      status="Failed"
        
     model=EmailHistory(email_from=host_user_email,email_to=email,status=status)
-    model.save()    
+    model.save() 
     
+    #__________________________
+    original='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/original.xlsx'
+    print("original")
+    print(original)
+    # original = 'C:\\Users\\ABU DUJANA ANSARI\Desktop\\original.xlsx'
+    target = 'C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
+    print("target")
+    print(target)
+   
+    shutil.copyfile(original, target)
+
+    wb = openpyxl.load_workbook(target)
+    print("wb")
+    print(wb)
+    
+    ws = wb.active
+    print("ws sheet")
+    print(ws)
+
+    file_path1='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/original.xlsx'
+    print("file_path1")
+    print(file_path1)
+    file_split1=file_path1.split("static")[1]
+    print("file_split1")
+    print(file_split1)
+
+    old_url= f"http://127.0.0.1:8000/static{file_split1}"
+    print("old_url")
+    print(old_url)
+
+    file_path2='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
+    print("file_path2")
+    print(file_path2)
+    file_split2=file_path2.split("static")[1]
+    print("file_split2")
+    print(file_split2)
+
+    new_url= f"http://127.0.0.1:8000/static{file_split2}"
+    print("new_url")
+    print(new_url)
+    
+    user=request.user
+    email=request.user.email
+   
     print("user")      
     print(user)
     print("email")
     print(email)
+     
+    #__________________________
+    # print("user")      
+    # print(user)
+    # print("email")
+    # print(email)
     subject="Excel data"
     message=f"Hello this is a exported data,Your credentials are: Username:{request.user},Password:{request.user.password},FirstName:{request.user.first_name},LastName:{request.user.last_name}"    
     print("message")
@@ -551,6 +564,15 @@ def mailing(request):
     recipient_list=[email]
     print("recipient list")
     print(recipient_list)
+    
+    data=[{'username': request.user,
+    'First Name': request.user.first_name, 
+    'Last Name': request.user.last_name}]
+    
+    print("data")
+    print(data)
+    
+    pd.DataFrame(data).to_excel(target)
 
     if get_date and timing:  
       
@@ -600,62 +622,86 @@ def mailing(request):
       return HttpResponse("Email sent successfully")
 
 
-# def mailing_all(request):      
-  
-#   file_path2= "C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/mail.xlsx"   
-#   subject="Your Email Details"
-#   users=get_user_model().objects.all()
-  
-#   import re
-  
-#   def check(s):
-#     pat = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
-#     if re.match(pat,s):
-#       return True
-#     else:
-#        return False
-     
-#   host_user_email=settings.EMAIL_HOST_USER        
-#   users=get_user_model().objects.all()
-  
-#   for user in users:
-#     print("mailing")       
-#     to_email=user.email
-#     username=user.username
-#     password=user.password
-#     firstname=user.first_name
-#     lastname=user.last_name
-    
-#     if check(host_user_email) and check(to_email):
-#        status="Success"
-#     else:
-#        status="Failed"
-    
-#     model=EmailHistory(email_from=host_user_email,email_to=to_email,status=status)
-#     model.save()
-
-#   message=f"Hello ,Your credentials are: Username:{username},Password:{password},firstname:{firstname},lastname:{lastname}"
-#   send_mail_with_attachments.delay(subject,message,[to_email],file_path2)
-  
-#   return HttpResponse("Email send successfully")
-
-
 def mailing_all(request):
   
+  response={}
+  if request.method=="POST":
+    try:      
+      # email_id=request.POST['email_id']    
+      full_date=request.POST['date']
+      # full_date_new=request.POST['date_new']
+      timing=request.POST['timing']
+      refresh_period = request.POST.get('refresh_period', None)
+      print("Refresh Period Selected:", refresh_period)
+     
+      print("full_date")      
+      get_date=full_date
+      # get_date_new=full_date_new
+     
+      if get_date:
+        full_date=full_date.split("-")
+        print(full_date)
+        year=full_date[0]
+        print("year")
+        print(year)
+        print("month")
+        month=full_date[1]
+        print(month)
+        date=full_date[2]
+       
+        print("date")
+        print(date)
+     
+      if timing:
+         
+        print("timing")
+        timing=timing.split(":")
+        print(timing)
+        hour=timing[0]
+        minutes=timing[1]
+        print("hour")
+        print(hour)
+        print("minutes")
+        print(minutes)
+     
+      # if get_date_new:
+      #   full_date_new=full_date_new.split("-")
+      #   print(full_date_new)
+      #   year_new=full_date_new[0]
+      #   print("year")
+      #   print(year_new)
+      #   print("month")
+      #   month_new=full_date_new[1]
+      #   print(month_new)
+      #   date_new=full_date_new[2]
+       
+      #   print("date_new")
+      #   print(date_new)
+       
+     
+      # if not email_id:
+      #   return HttpResponse("Please Enter email_id")
+       
+    except Exception as e:
+      response['error'] = True
+      response['message'] = str(e)
+      print("Exception occurred:", e)
+
   users=get_user_model().objects.all()
-  
+ 
   selected_email=request.POST.get('email_all')
-  print(selected_email)
   if selected_email=='reciepient_list':
     reciepients =[user.email for user in users]
   else:
     reciepients=[selected_email]
-  
-  file_path2= "C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/mail.xlsx"   
+
+  # file_path2= "C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/mail.xlsx"   
+ 
+  # file_path2="D:/celery-send-mail-master-21/celery-send-mail-master/static/Employee-2023-09-06.xlsx"
   subject="Your Email Details"
-  
+
   import re
-  
+ 
   def check(s):
     pat = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
     if re.match(pat,s):
@@ -665,15 +711,17 @@ def mailing_all(request):
      
   host_user_email=settings.EMAIL_HOST_USER        
   users=get_user_model().objects.all()
-  
-  for user in users:
-    print("mailing")       
+ 
+  for reciepient in reciepients:
+    user=get_user_model().objects.get(email=reciepient)
+   
+    print("mailing")      
     to_email=user.email
     username=user.username
     password=user.password
     firstname=user.first_name
     lastname=user.last_name
-    
+
     if check(host_user_email) and check(to_email):
        status="Success"
     else:
@@ -681,13 +729,108 @@ def mailing_all(request):
     
     model=EmailHistory(email_from=host_user_email,email_to=to_email,status=status)
     model.save()
-
-    message=f"Hello ,Your credentials are: Username:{username},Password:{password},firstname:{firstname},lastname:{lastname}"
     
-    send_mail_with_attachments.delay(subject,message,[to_email],file_path2)
-    
-  return HttpResponse("Email send successfully")
+        #__________________________
+    original='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/original.xlsx'
+    print("original")
+    print(original)
+    # original = 'C:\\Users\\ABU DUJANA ANSARI\Desktop\\original.xlsx'
+    target = 'C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
+    print("target")
+    print(target)
+   
+    shutil.copyfile(original, target)
 
+    wb = openpyxl.load_workbook(target)
+    print("wb")
+    print(wb)
+    
+    ws = wb.active
+    print("ws sheet")
+    print(ws)
+
+    file_path1='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/original.xlsx'
+    print("file_path1")
+    print(file_path1)
+    file_split1=file_path1.split("static")[1]
+    print("file_split1")
+    print(file_split1)
+
+    old_url= f"http://127.0.0.1:8000/static{file_split1}"
+    print("old_url")
+    print(old_url)
+
+    file_path2='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
+    print("file_path2")
+    print(file_path2)
+    file_split2=file_path2.split("static")[1]
+    print("file_split2")
+    print(file_split2)
+
+    new_url= f"http://127.0.0.1:8000/static{file_split2}"
+    print("new_url")
+    print(new_url)     
+    #__________________________
+    message=f"Hello this is a exported data,Your credentials are: Username:{request.user},Password:{request.user.password},FirstName:{request.user.first_name},LastName:{request.user.last_name}"    
+    
+    data=[{'username': request.user,
+    'First Name': request.user.first_name, 
+    'Last Name': request.user.last_name}]
+    
+    print("data")
+    print(data)
+    
+    pd.DataFrame(data).to_excel(target)
+   
+    
+    if get_date and timing:  
+     
+      # if get_date_new:
+      #    combined_Date=f"{date},{date_new}"
+      #    print(combined_Date)
+      #    chon_schedule = CrontabSchedule.objects.create(
+      #     minute=minutes,
+      #     hour=hour,          
+      #     day_of_month=combined_Date,
+      #     month_of_year=month,
+      #     day_of_week='*',
+      #   )
+     
+      if refresh_period=="monthly":
+        chon_schedule = CrontabSchedule.objects.create(
+          minute=minutes,
+          hour=hour,          
+          day_of_month=date,          
+      )  
+     
+      elif refresh_period == "weekly":
+        chon_schedule = CrontabSchedule.objects.create(minute=minutes, hour=hour, day_of_week='*')
+      elif refresh_period == "hourly":
+        print("yes")
+        chon_schedule = CrontabSchedule.objects.create(minute=minutes, hour='*')
+      elif refresh_period == "daily":
+        chon_schedule = CrontabSchedule.objects.create(minute=minutes, hour=hour, day_of_month='*', month_of_year='*')    
+      else:    
+        chon_schedule = CrontabSchedule.objects.create(
+          minute=minutes,
+          hour=hour,          
+          day_of_month=date,
+          month_of_year=month,
+          day_of_week='*',
+        )
+      to_email1=[to_email]
+ 
+      args = (subject, message, to_email1, file_path2)
+      create_schedule = PeriodicTask.objects.create(
+        name="xyz" + str(uuid.uuid4()),
+        crontab=chon_schedule,
+        task='send_mail_app.tasks.send_mail_with_attachments',
+        args=json.dumps(args)
+      )      
+      return HttpResponse("Email schedule successfully")      
+    else:
+      send_mail_with_attachments.delay(subject, message, [to_email], file_path2)
+      return HttpResponse("Email sent successfully")
 
 
 def email_history(request):

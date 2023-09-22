@@ -18,8 +18,7 @@ class Customer(models.Model):
     city=models.CharField(max_length=50)
     
     def __str__(self):
-        return str(self.name)
-    
+        return str(self.name)    
 
 class EmailHistory(models.Model):
     email_from=models.EmailField()
@@ -31,8 +30,7 @@ class EmailHistory(models.Model):
     ('Pending', 'Pending'),
     ]
     
-    status = models.CharField(max_length=100, choices=STATUS_CHOICES)
-    # status=models.CharField(max_length=100)    
+    status = models.CharField(max_length=100, choices=STATUS_CHOICES)    
     dateTime= models.DateTimeField(auto_now_add=True)
     
     def __str__(self):

@@ -3,7 +3,7 @@ from django.urls import path
 from .import views
 
 urlpatterns = [
-   
+    
     path('', views.send_mail_to_gmail,name="home"),
     path('send-email', views.send_email,name="send-email"),
     path('send-attachment',views.send_xlsx,name="send-attachment"),

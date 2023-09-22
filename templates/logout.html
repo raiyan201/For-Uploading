@@ -8,13 +8,21 @@
 <link rel="stylesheet" href="/static/css.css">
 
 <div class="container">
-    <h1 >Users Page</h1>
-
+  <div class="card col-md-12 mx-auto mt-4 mb-4">
+    <div class="card-header">
+		<div class="card-title">
+			<center><h1>User Page</h1></center>
+		</div>
+	</div>
+</div>
+  
 {% if user.is_authenticated %}
 
 {% comment %} <button type="button" class="btn btn-outline-info"><a href="{% url 'download-data' %}">Download</a></button>    
 <button type="button" class="btn btn-outline-info"><a href="{% url 'attach-file' %}">Send-Mail-Now</a></button>     {% endcomment %}
 
+<div class="card-body">
+  <div class="p-2">
 <form name="myForm" action="{% url 'mailing' %}" onsubmit="return validateForm()" method="post">
 
 {% csrf_token %}
@@ -27,7 +35,7 @@
 </select>
 <input type="hidden" name="dateTime" id="dateTime" value="">
 
-<div>scheduler</div>    
+<div>scheduler</div>
 <input type="button" id="btn1" value="yes" onclick="show(this)">
 
 <div id="datefield" style="display:none">
@@ -62,7 +70,7 @@
 <button type="submit" class="btn btn-outline-info">Send</a></button>    
 
 </form>
-
+</div>
 {% if user.is_superuser %}
 <div class="d-flex justify-content-end">
   <a href="{% url 'email-history' %}" class="btn btn-success">Email History</a>
@@ -96,19 +104,21 @@
   
         <div id="check2" style="display:none">
           monthly:
-          <input type="radio" name="refresh_period" id="monthly">
+          <input type="radio" name="refresh_period" id="monthly" value="monthly">
           weekly:
-          <input type="radio" name="refresh_period" id="weekly">
+          <input type="radio" name="refresh_period" id="weekly" value="weekly">
           hourly:
-          <input type="radio" name="refresh_period" id="hourly">
+          <input type="radio" name="refresh_period" id="hourly" value="hourly">
           daily:
-          <input type="radio" name="refresh_period" id="daily">
-      
+          <input type="radio" name="refresh_period" id="daily" value="daily">      
         </div>
       </div>
  
 <button type="submit" class="btn btn-outline-info">Send</a></button>  
 </form>
+</div>
+
+</div>
 
 
 {% endif %}  
