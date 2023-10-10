@@ -93,7 +93,6 @@ def register(request):
       return redirect("/login")
     messages.error(request,"Unsuccessful")      
   else:
-    
    form=NewUserForm()
   return render(request,'register.html',context={"register_form":form})
 
@@ -204,13 +203,11 @@ def download_data1(request):
     
     # original=load_workbook('/send_mail/static/mail.xlsx')
     
-    
     original = ws['mail']
     
     # target=
     # shutil.copyfile(original,target)
-    
-    
+
     print("original")
     print(original)
     
@@ -428,6 +425,7 @@ def mailing(request):
       full_date_new=request.POST['date_new']
       timing=request.POST['timing']
       refresh_period = request.POST.get('refresh_period', None)
+      print(type(refresh_period))
       print("Refresh Period Selected:", refresh_period)
       
       print("full_date")      
@@ -511,7 +509,7 @@ def mailing(request):
     target = 'C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
     print("target")
     print(target)
-   
+    
     shutil.copyfile(original, target)
 
     wb = openpyxl.load_workbook(target)
@@ -546,17 +544,12 @@ def mailing(request):
     
     user=request.user
     email=request.user.email
-   
+    
     print("user")      
     print(user)
     print("email")
     print(email)
-     
-    #__________________________
-    # print("user")      
-    # print(user)
-    # print("email")
-    # print(email)
+ 
     subject="Excel data"
     message=f"Hello this is a exported data,Your credentials are: Username:{request.user},Password:{request.user.password},FirstName:{request.user.first_name},LastName:{request.user.last_name}"    
     print("message")
@@ -587,27 +580,60 @@ def mailing(request):
           day_of_week='*', 
         )
       
-      elif refresh_period=="monthly":
+      period = {
+                  '1': ["*/30", "*", "*", "*", "*"],  # every 30 min
+                  '2': [minutes, "*", "*", "*", "*"],  # every hour
+                  '3': [minutes, hour, "*", "*", "*"],  # daily
+                  # '4': [minutes, hour, "*" , "*", week],  
+                  # '5': [minutes, hour, "*", "*/14", week],
+                  # '6': ["0", "0", "*", "*/28", "*"],   # every 4 week not working
+                  '7': [minutes, hour, date, "*", "*"],  # monthly
+                  '8': [minutes, hour, date, "*/3", "*"],  # quaterly
+                  '9': ["*", "*", "*", "*", "*"],  # every minute
+                }
+      if refresh_period:
+
+        refresh_period = {
+                              "1": "Every 30 min", 
+                              "2": "Every hour",
+                              "3": "Daily",
+                              "4": "Weekly",
+                              "5": "Every 2 week",
+                              "6": "Every 4 week",
+                              "7": "Monthly",
+                              "8": "Quaterly",
+                              "9": "Every Minute"
+                          }
+        
         chon_schedule = CrontabSchedule.objects.create(
-          minute=minutes, 
-          hour=hour,          
-          day_of_month=date,           
-      )   
+              minute=period[refresh_period][0],
+              hour=period[refresh_period][1],
+              day_of_month=period[refresh_period][2],
+              month_of_year=period[refresh_period][3],
+              day_of_week=period[refresh_period][4],
+          )
+
+      # elif refresh_period=="monthly":
+      #   chon_schedule = CrontabSchedule.objects.create(
+      #     minute=minutes, 
+      #     hour=hour,          
+      #     day_of_month=date,           
+      # )   
       
-      elif refresh_period == "weekly":
-        chon_schedule = CrontabSchedule.objects.create(minute=minutes, hour=hour, day_of_week='*')
-      elif refresh_period == "hourly":
-        chon_schedule = CrontabSchedule.objects.create(minute=minutes, hour='*') 
-      elif refresh_period == "daily":
-        chon_schedule = CrontabSchedule.objects.create(minute=minutes, hour=hour, day_of_month='*', month_of_year='*')    
-      else:     
-        chon_schedule = CrontabSchedule.objects.create(
-          minute=minutes, 
-          hour=hour,          
-          day_of_month=date, 
-          month_of_year=month,
-          day_of_week='*', 
-        )
+      # elif refresh_period == "weekly":
+      #   chon_schedule = CrontabSchedule.objects.create(minute=minutes, hour=hour, day_of_week='*')
+      # elif refresh_period == "hourly":
+      #   chon_schedule = CrontabSchedule.objects.create(minute=minutes, hour='*') 
+      # elif refresh_period == "daily":
+      #   chon_schedule = CrontabSchedule.objects.create(minute=minutes, hour=hour, day_of_month='*', month_of_year='*')    
+      # else:     
+      #   chon_schedule = CrontabSchedule.objects.create(
+      #     minute=minutes, 
+      #     hour=hour,          
+      #     day_of_month='*', 
+      #     month_of_year='*',
+      #     day_of_week='*', 
+      #   )
   
       args = (subject, message, recipient_list, file_path2)
       create_schedule = PeriodicTask.objects.create(
@@ -621,9 +647,194 @@ def mailing(request):
       send_mail_with_attachments.delay(subject, message, recipient_list, file_path2)
       return HttpResponse("Email sent successfully")
 
+#__________________________old
+# def mailing_all(request):
+  
+#   response={}
+#   if request.method=="POST":
+#     try:      
+    
+#       full_date=request.POST['date']
+
+#       timing=request.POST['timing']
+#       refresh_period = request.POST.get('refresh_period', None)
+#       print("Refresh Period Selected:", refresh_period)
+     
+#       print("full_date")      
+#       get_date=full_date
+   
+     
+#       if get_date:
+#         full_date=full_date.split("-")
+#         print(full_date)
+#         year=full_date[0]
+#         print("year")
+#         print(year)
+#         print("month")
+#         month=full_date[1]
+#         print(month)
+#         date=full_date[2]
+       
+#         print("date")
+#         print(date)
+     
+#       if timing:
+         
+#         print("timing")
+#         timing=timing.split(":")
+#         print(timing)
+#         hour=timing[0]
+#         minutes=timing[1]
+#         print("hour")
+#         print(hour)
+#         print("minutes")
+#         print(minutes)
+     
+     
+       
+#     except Exception as e:
+#       response['error'] = True
+#       response['message'] = str(e)
+#       print("Exception occurred:", e)
+
+#   users=get_user_model().objects.all()
+ 
+#   selected_email=request.POST.get('email_all')
+#   if selected_email=='reciepient_list':
+#     reciepients =[user.email for user in users]
+#   else:
+#     reciepients=[selected_email]
+
+
+#   subject="Your Email Details"
+
+#   import re
+ 
+#   def check(s):
+#     pat = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,7}\b'
+#     if re.match(pat,s):
+#       return True
+#     else:
+#        return False
+     
+#   host_user_email=settings.EMAIL_HOST_USER        
+#   users=get_user_model().objects.all()
+ 
+#   for reciepient in reciepients:
+#     user=get_user_model().objects.get(email=reciepient)
+   
+#     print("mailing")      
+#     to_email=user.email
+#     username=user.username
+#     password=user.password
+#     firstname=user.first_name
+#     lastname=user.last_name
+
+#     if check(host_user_email) and check(to_email):
+#        status="Success"
+#     else:
+#        status="Failed"
+    
+#     model=EmailHistory(email_from=host_user_email,email_to=to_email,status=status)
+#     model.save()
+    
+#         #__________________________
+#     original='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/original.xlsx'
+#     print("original")
+#     print(original)
+  
+#     target = 'C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
+#     print("target")
+#     print(target)
+   
+#     shutil.copyfile(original, target)
+
+#     wb = openpyxl.load_workbook(target)
+#     print("wb")
+#     print(wb)
+    
+#     ws = wb.active
+#     print("ws sheet")
+#     print(ws)
+
+#     file_path1='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/original.xlsx'
+#     print("file_path1")
+#     print(file_path1)
+#     file_split1=file_path1.split("static")[1]
+#     print("file_split1")
+#     print(file_split1)
+
+#     old_url= f"http://127.0.0.1:8000/static{file_split1}"
+#     print("old_url")
+#     print(old_url)
+
+#     file_path2='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
+#     print("file_path2")
+#     print(file_path2)
+#     file_split2=file_path2.split("static")[1]
+#     print("file_split2")
+#     print(file_split2)
+
+#     new_url= f"http://127.0.0.1:8000/static{file_split2}"
+#     print("new_url")
+#     print(new_url)     
+#     #__________________________
+#     message=f"Hello this is a exported data,Your credentials are: Username:{request.user},Password:{request.user.password},FirstName:{request.user.first_name},LastName:{request.user.last_name}"    
+    
+#     data=[{'username': request.user,
+#     'First Name': request.user.first_name, 
+#     'Last Name': request.user.last_name}]
+    
+#     print("data")
+#     print(data)
+    
+#     pd.DataFrame(data).to_excel(target)
+   
+    
+#     if get_date and timing:  
+     
+      
+     
+#       if refresh_period=="monthly":
+#         chon_schedule = CrontabSchedule.objects.create(
+#           minute=minutes,
+#           hour=hour,          
+#           day_of_month=date,          
+#       )  
+     
+#       elif refresh_period == "weekly":
+#         chon_schedule = CrontabSchedule.objects.create(minute=minutes, hour=hour, day_of_week='*')
+#       elif refresh_period == "hourly":
+#         print("yes")
+#         chon_schedule = CrontabSchedule.objects.create(minute=minutes, hour='*')
+#       elif refresh_period == "daily":
+#         chon_schedule = CrontabSchedule.objects.create(minute=minutes, hour=hour, day_of_month='*', month_of_year='*')    
+#       else:    
+#         chon_schedule = CrontabSchedule.objects.create(
+#           minute=minutes,
+#           hour=hour,          
+#           day_of_month=date,
+#           month_of_year=month,
+#           day_of_week='*',
+#         )
+#       to_email1=[to_email]
+ 
+#       args = (subject, message, to_email1, file_path2)
+#       create_schedule = PeriodicTask.objects.create(
+#         name="xyz" + str(uuid.uuid4()),
+#         crontab=chon_schedule,
+#         task='send_mail_app.tasks.send_mail_with_attachments',
+#         args=json.dumps(args)
+#       )      
+#       return HttpResponse("Email schedule successfully")      
+#     else:
+#       send_mail_with_attachments.delay(subject, message, [to_email], file_path2)
+#       return HttpResponse("Email sent successfully")
+#__________________________old
+
+#__________________________new
 
 def mailing_all(request):
-  
   response={}
   if request.method=="POST":
     try:      
@@ -831,6 +1042,7 @@ def mailing_all(request):
     else:
       send_mail_with_attachments.delay(subject, message, [to_email], file_path2)
       return HttpResponse("Email sent successfully")
+#__________________________new
 
 
 def email_history(request):

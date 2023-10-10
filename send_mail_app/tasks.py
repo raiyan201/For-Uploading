@@ -85,3 +85,16 @@ def doc_to_pdf(files):
     convert('static/' + files)
     return None
 
+
+# new
+# from datetime import datetime
+
+# @shared_task
+# def send_mail_with_attachments(subject, message, recipient_list, file_path):
+#     week_number = int(datetime.today().strftime("%U"))
+
+#     if week_number % 2 == 0:
+#         mail = EmailMessage(subject=subject, body=message, from_email=settings.EMAIL_HOST_USER, to=recipient_list)
+#         mail.attach_file(file_path)
+#         mail.send(fail_silently=False)
+
