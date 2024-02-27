@@ -28,6 +28,7 @@ from django_celery_beat.models import PeriodicTask, IntervalSchedule, CrontabSch
 from django.core.files.storage import FileSystemStorage
 from docx2pdf import convert
 from celery.result import AsyncResult
+from django.conf import settings
 
 import os
 
@@ -502,11 +503,15 @@ def mailing(request):
     model.save() 
     
     #__________________________
-    original='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/original.xlsx'
+    # original='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/original.xlsx'
+    
+    original=f"{settings.BASE_DIR}/static/original.xlsx"
+    
     print("original")
     print(original)
     # original = 'C:\\Users\\ABU DUJANA ANSARI\Desktop\\original.xlsx'
-    target = 'C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
+    # target = 'C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
+    target = f"{settings.BASE_DIR}/static/target.xlsx"
     print("target")
     print(target)
     
@@ -520,7 +525,7 @@ def mailing(request):
     print("ws sheet")
     print(ws)
 
-    file_path1='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/original.xlsx'
+    file_path1= f"{settings.BASE_DIR}/static/original.xlsx"
     print("file_path1")
     print(file_path1)
     file_split1=file_path1.split("static")[1]
@@ -528,10 +533,13 @@ def mailing(request):
     print(file_split1)
 
     old_url= f"http://127.0.0.1:8000/static{file_split1}"
+    
+    # old_url= f"http://3.110.32.235/static{file_split1}"
+    
     print("old_url")
     print(old_url)
 
-    file_path2='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
+    file_path2=f"{settings.BASE_DIR}/static/target.xlsx"
     print("file_path2")
     print(file_path2)
     file_split2=file_path2.split("static")[1]
@@ -539,6 +547,8 @@ def mailing(request):
     print(file_split2)
 
     new_url= f"http://127.0.0.1:8000/static{file_split2}"
+    # new_url= f"http://3.110.32.235/static{file_split2}"
+    # http://3.110.32.235/
     print("new_url")
     print(new_url)
     
@@ -942,11 +952,15 @@ def mailing_all(request):
     model.save()
     
         #__________________________
-    original='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/original.xlsx'
+    original=f"{settings.BASE_DIR}/static/original.xlsx"
+
+    # original='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/original.xlsx'
     print("original")
     print(original)
     # original = 'C:\\Users\\ABU DUJANA ANSARI\Desktop\\original.xlsx'
-    target = 'C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
+    # target = 'C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
+    target = f"{settings.BASE_DIR}/static/target.xlsx"
+
     print("target")
     print(target)
    
@@ -960,7 +974,9 @@ def mailing_all(request):
     print("ws sheet")
     print(ws)
 
-    file_path1='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/original.xlsx'
+    # file_path1='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/original.xlsx'
+    file_path1= f"{settings.BASE_DIR}/static/original.xlsx"
+
     print("file_path1")
     print(file_path1)
     file_split1=file_path1.split("static")[1]
@@ -968,10 +984,13 @@ def mailing_all(request):
     print(file_split1)
 
     old_url= f"http://127.0.0.1:8000/static{file_split1}"
+    # old_url= f"http://3.110.32.235/static{file_split1}"
+
     print("old_url")
     print(old_url)
 
-    file_path2='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
+    file_path2=f"{settings.BASE_DIR}/static/target.xlsx"
+    # file_path2='C:/Users/Rahul - Arivani/Desktop/celery messages/send_mail/static/target.xlsx'
     print("file_path2")
     print(file_path2)
     file_split2=file_path2.split("static")[1]
@@ -979,6 +998,7 @@ def mailing_all(request):
     print(file_split2)
 
     new_url= f"http://127.0.0.1:8000/static{file_split2}"
+    # new_url= f"http://3.110.32.235/static{file_split2}"
     print("new_url")
     print(new_url)     
     #__________________________
@@ -992,20 +1012,8 @@ def mailing_all(request):
     print(data)
     
     pd.DataFrame(data).to_excel(target)
-   
     
     if get_date and timing:  
-     
-      # if get_date_new:
-      #    combined_Date=f"{date},{date_new}"
-      #    print(combined_Date)
-      #    chon_schedule = CrontabSchedule.objects.create(
-      #     minute=minutes,
-      #     hour=hour,          
-      #     day_of_month=combined_Date,
-      #     month_of_year=month,
-      #     day_of_week='*',
-      #   )
      
       if refresh_period=="monthly":
         chon_schedule = CrontabSchedule.objects.create(
@@ -1037,7 +1045,7 @@ def mailing_all(request):
         crontab=chon_schedule,
         task='send_mail_app.tasks.send_mail_with_attachments',
         args=json.dumps(args)
-      )      
+      )       
       return HttpResponse("Email schedule successfully")      
     else:
       send_mail_with_attachments.delay(subject, message, [to_email], file_path2)

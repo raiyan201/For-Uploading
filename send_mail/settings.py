@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'send_mail_app',
     'django_celery_beat',
     'django_celery_results',
-    'import_export',
+    # 'import_export',
     'crispy_forms'
 ]
 
