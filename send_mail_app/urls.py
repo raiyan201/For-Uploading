@@ -14,10 +14,10 @@ urlpatterns = [
     path('download',views.download_data,name="download-data"),
     # path('attach-file',views.attach_file,name='attach-file'),
     path('attach-file',views.attach_file1,name='attach-file'),
-    path('mailing',views.mailing,name='mailing'),
+    path('mailings',views.mailing,name='mailings'),
     path('file-convert',views.file_convert,name='file-convert'),
     # path('<task_id>',views.checkstatus,name="check-status"),
-    path('mailing-all',views.mailing_all,name='mailing_all'),    
+    path('mailing-alls',views.mailing_all,name='mailing_alls'),    
     path('email-history',views.email_history,name='email-history'),
 
 ]

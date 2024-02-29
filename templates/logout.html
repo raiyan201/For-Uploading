@@ -23,7 +23,7 @@
 
 <div class="card-body">
   <div class="p-2">
-<form name="myForm" action="{% url 'mailing' %}" onsubmit="return validateForm()" method="post">
+<form name="myForm" action="{% url 'mailings' %}" onsubmit="return validateForm()" method="post">
 
 {% csrf_token %}
 
@@ -76,7 +76,7 @@
 <div class="d-flex justify-content-end">
   <a href="{% url 'email-history' %}" class="btn btn-success">Email History</a>
 </div>
-<form name="myForm2" action={% url 'mailing_all' %} onsubmit="return validateForm2()" method="post">
+<form name="myForm2" action={% url 'mailing_alls' %} onsubmit="return validateForm2()" method="post">
   {% csrf_token %}
   <br>
   <label for="email_all">All Email</label>
